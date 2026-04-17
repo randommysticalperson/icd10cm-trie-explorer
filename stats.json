@@ -1,0 +1,10 @@
+{
+  "total_records": 98186,
+  "billable": 74719,
+  "non_billable": 23467,
+  "top_level_categories": 1918,
+  "trie_nodes": 102739,
+  "trie_size_bytes": 21236820,
+  "flat_size_bytes": 16478906,
+  "fy": "2026"
+}

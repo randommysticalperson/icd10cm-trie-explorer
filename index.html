@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICD-10-CM 2026 Trie Explorer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ HEADER ══ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <span class="header-logo">&#9670;</span>
+      <div>
+        <h1 class="header-title">ICD-10-CM Trie Explorer</h1>
+        <p class="header-subtitle">FY 2026 &mdash; Trie-powered search &amp; browse</p>
+      </div>
+    </div>
+    <div class="header-stats" id="headerStats">
+      <div class="stat-pill"><span class="stat-num" id="statTotal">98,186</span><span class="stat-label">Total Codes</span></div>
+      <div class="stat-pill"><span class="stat-num" id="statBillable">74,719</span><span class="stat-label">Billable</span></div>
+      <div class="stat-pill"><span class="stat-num" id="statCategories">1,918</span><span class="stat-label">Categories</span></div>
+      <div class="stat-pill stat-pill-accent"><span class="stat-num" id="statAdds">487</span><span class="stat-label">FY26 Adds</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════ MAIN ══════ -->
+<main class="main-layout">
+
+  <!-- ── LEFT PANEL: Trie Browser ──────────────────────────────────── -->
+  <aside class="panel panel-left" id="panelLeft">
+    <div class="panel-header">
+      <h2 class="panel-title">Trie Browser</h2>
+      <div class="panel-controls">
+        <button class="btn-icon" id="btnCollapseAll" title="Collapse all">&#8722;</button>
+        <button class="btn-icon" id="btnExpandTop" title="Expand top level">&#43;</button>
+      </div>
+    </div>
+
+    <!-- Chapter filter pills -->
+    <div class="chapter-filter" id="chapterFilter">
+      <span class="filter-label">Chapter:</span>
+      <div class="chapter-pills" id="chapterPills">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Trie tree -->
+    <div class="trie-scroll" id="trieScroll">
+      <ul class="trie-root" id="trieRoot">
+        <!-- Populated by JS -->
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ── CENTER PANEL: Search / Addenda / Stats ─────────────────────── -->
+  <section class="panel panel-center" id="panelCenter">
+    <!-- Top-level tab bar -->
+    <div class="panel-header panel-header-tabs">
+      <div class="main-tabs" id="mainTabs">
+        <button class="main-tab active" data-view="search">&#128269; Search</button>
+        <button class="main-tab" data-view="addenda">&#9998; Addenda</button>
+        <button class="main-tab" data-view="stats">&#9636; Chapter Stats</button>
+      </div>
+    </div>
+
+    <!-- ── SEARCH VIEW ─────────────────────────────────────────────── -->
+    <div class="view-pane" id="viewSearch">
+      <div class="search-mode-bar">
+        <div class="search-mode-tabs" id="searchModeTabs">
+          <button class="tab-btn active" data-mode="prefix">Prefix</button>
+          <button class="tab-btn" data-mode="fulltext">Full-text</button>
+          <button class="tab-btn" data-mode="exact">Exact Code</button>
+        </div>
+        <span class="kbd-hint">Press <kbd>/</kbd> to focus</span>
+      </div>
+
+      <div class="search-bar-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Type a code prefix (e.g. A00, J45, M79…)" autocomplete="off" spellcheck="false" />
+        <button class="btn-clear" id="btnClearSearch" title="Clear">&#10005;</button>
+      </div>
+
+      <div class="search-meta" id="searchMeta">
+        <span id="searchResultCount"></span>
+        <span id="searchTiming"></span>
+      </div>
+
+      <div class="results-wrap" id="resultsWrap">
+        <ul class="results-list" id="resultsList"></ul>
+        <div class="results-empty" id="resultsEmpty" style="display:none">
+          <span class="empty-icon">&#128203;</span>
+          <p>No codes found. Try a different query.</p>
+        </div>
+        <div class="results-placeholder" id="resultsPlaceholder">
+          <span class="placeholder-icon">&#9670;</span>
+          <p>Enter a code prefix (e.g. <code>A00</code>), keyword (e.g. <code>cholera</code>), or switch modes above.</p>
+        </div>
+      </div>
+
+      <div class="pagination" id="pagination" style="display:none">
+        <button class="btn-page" id="btnPrevPage">&#8592; Prev</button>
+        <span class="page-info" id="pageInfo"></span>
+        <button class="btn-page" id="btnNextPage">Next &#8594;</button>
+      </div>
+    </div>
+
+    <!-- ── ADDENDA VIEW ────────────────────────────────────────────── -->
+    <div class="view-pane hidden" id="viewAddenda">
+      <div class="addenda-header">
+        <div class="addenda-summary" id="addendaSummary">
+          <!-- Populated by JS -->
+        </div>
+        <div class="addenda-filter-bar">
+          <div class="addenda-type-tabs" id="addendaTypeTabs">
+            <button class="tab-btn active" data-atype="all">All</button>
+            <button class="tab-btn" data-atype="Add">Adds</button>
+            <button class="tab-btn" data-atype="Delete">Deletes</button>
+            <button class="tab-btn" data-atype="Revise from">Revisions</button>
+          </div>
+          <input type="text" id="addendaSearch" class="search-input addenda-search"
+                 placeholder="Filter addenda…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="addenda-list-wrap">
+        <ul class="addenda-list" id="addendaList"></ul>
+      </div>
+    </div>
+
+    <!-- ── CHAPTER STATS VIEW ─────────────────────────────────────── -->
+    <div class="view-pane hidden" id="viewStats">
+      <div class="stats-wrap" id="statsWrap">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RIGHT PANEL: Code Detail ───────────────────────────────────── -->
+  <aside class="panel panel-right" id="panelRight">
+    <div class="panel-header">
+      <h2 class="panel-title">Code Detail</h2>
+      <button class="btn-icon" id="btnCopyCode" title="Copy code" style="display:none">&#128203;</button>
+    </div>
+
+    <div class="detail-placeholder" id="detailPlaceholder">
+      <span class="placeholder-icon">&#9670;</span>
+      <p>Select a code from the browser or search results to view details.</p>
+    </div>
+
+    <div class="detail-card" id="detailCard" style="display:none">
+      <div class="detail-code-row">
+        <span class="detail-code-badge" id="detailCode"></span>
+        <span class="detail-billable-badge" id="detailBillable"></span>
+        <span class="detail-new-badge hidden" id="detailNewBadge">NEW FY26</span>
+      </div>
+      <h3 class="detail-long-desc" id="detailLong"></h3>
+      <p class="detail-short-desc" id="detailShort"></p>
+
+      <div class="detail-meta-grid">
+        <div class="detail-meta-item">
+          <span class="meta-label">Order #</span>
+          <span class="meta-value" id="detailOrder"></span>
+        </div>
+        <div class="detail-meta-item">
+          <span class="meta-label">Code Length</span>
+          <span class="meta-value" id="detailLen"></span>
+        </div>
+        <div class="detail-meta-item">
+          <span class="meta-label">Chapter</span>
+          <span class="meta-value" id="detailChapter"></span>
+        </div>
+        <div class="detail-meta-item">
+          <span class="meta-label">Category</span>
+          <span class="meta-value" id="detailCategory"></span>
+        </div>
+      </div>
+
+      <!-- Ancestry breadcrumb -->
+      <div class="detail-section">
+        <h4 class="detail-section-title">Hierarchy</h4>
+        <ol class="breadcrumb-list" id="detailBreadcrumb"></ol>
+      </div>
+
+      <!-- Siblings / children -->
+      <div class="detail-section" id="detailChildrenSection">
+        <h4 class="detail-section-title" id="detailChildrenTitle">Subcodes</h4>
+        <ul class="subcode-list" id="detailChildren"></ul>
+      </div>
+
+      <!-- Trie path visualization -->
+      <div class="detail-section">
+        <h4 class="detail-section-title">Trie Path</h4>
+        <div class="trie-path-viz" id="triePathViz"></div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════ FOOTER ════ -->
+<footer class="site-footer">
+  <p>ICD-10-CM FY2026 &mdash; Data sourced from CMS. Trie structure built from <strong>98,186</strong> codes &bull;
+     <strong>487</strong> new codes added in FY2026. Not for clinical use.</p>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════ LOADING ═══ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <p class="loading-text" id="loadingText">Loading ICD-10-CM data…</p>
+    <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TOAST ══════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════ SCRIPTS ════ -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="app.js"></script>
+</body>
+</html>
