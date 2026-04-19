@@ -264,21 +264,54 @@ $(function () {
         ? highlight(rec.short, displayQuery)
         : escHtml(rec.short);
 
+      const chapter = getChapterForCode(rec.code);
+      const chapterLabel = chapter ? `Ch. ${escHtml(chapter.label)} &mdash; ${escHtml(chapter.title)}` : '&mdash;';
+      const categoryCode = escHtml(rec.code.slice(0, 3));
+      const codeLen = rec.code.length;
+
       const $item = $(`
-        <li class="result-item" data-code="${escHtml(rec.code)}">
-          <span class="result-code">${codeHl}</span>
-          <div class="result-desc-wrap">
-            <div class="result-short">${descHl}</div>
-            ${rec.long && rec.long !== rec.short
-              ? `<div class="result-long">${escHtml(rec.long)}</div>`
-              : ''}
-          </div>
-          <div class="result-badges">
-            <span class="result-badge ${badgeClass}">${badgeText}</span>
-            ${isNew ? '<span class="result-badge badge-new">NEW</span>' : ''}
+        <li class="result-item result-flip-card" data-code="${escHtml(rec.code)}">
+          <div class="result-flip-inner">
+            <!-- FRONT: explore view -->
+            <div class="result-face result-face-front">
+              <span class="result-code">${codeHl}</span>
+              <div class="result-desc-wrap">
+                <div class="result-short">${descHl}</div>
+                ${rec.long && rec.long !== rec.short
+                  ? `<div class="result-long">${escHtml(rec.long)}</div>`
+                  : ''}
+              </div>
+              <div class="result-badges">
+                <span class="result-badge ${badgeClass}">${badgeText}</span>
+                ${isNew ? '<span class="result-badge badge-new">NEW</span>' : ''}
+              </div>
+            </div>
+            <!-- BACK: code view -->
+            <div class="result-face result-face-back">
+              <div class="result-back-code">${escHtml(rec.code)}</div>
+              <div class="result-back-grid">
+                <span class="result-back-label">Chapter</span>
+                <span class="result-back-value">${chapterLabel}</span>
+                <span class="result-back-label">Category</span>
+                <span class="result-back-value mono">${categoryCode}</span>
+                <span class="result-back-label">Type</span>
+                <span class="result-back-value">${badgeText}${isNew ? ' &bull; <span class="badge-new-inline">NEW FY26</span>' : ''}</span>
+                <span class="result-back-label">Length</span>
+                <span class="result-back-value mono">${codeLen} char${codeLen !== 1 ? 's' : ''}</span>
+              </div>
+              <div class="result-back-trie">${escHtml(rec.code).split('').map((ch, i, arr) =>
+                `<span class="tpn ${i === arr.length - 1 ? 'tpn-last' : ''}">${ch}</span>${i < arr.length - 1 ? '<span class="tpa">&rarr;</span>' : ''}`
+              ).join('')}</div>
+            </div>
           </div>
         </li>
       `);
+
+      $item.on('mouseenter', function () {
+        $(this).addClass('flipped');
+      }).on('mouseleave', function () {
+        $(this).removeClass('flipped');
+      });
 
       $item.on('click', function () {
         const code = $(this).data('code');

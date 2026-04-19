@@ -505,20 +505,161 @@ kbd {
 
 .results-list { list-style: none; }
 
+/* ── Result Flip Card ─────────────────────────────────────────────── */
 .result-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 9px 10px;
+  display: block;
+  padding: 0;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background var(--transition);
   border-bottom: 1px solid var(--border);
+  perspective: 800px;
+  /* fixed height so the flip doesn't collapse */
+  height: 54px;
+  position: relative;
+  overflow: visible;
 }
 
 .result-item:last-child { border-bottom: none; }
-.result-item:hover { background: var(--bg3); }
-.result-item.active { background: var(--accent-glow); border-left: 3px solid var(--accent); }
+.result-item.active { box-shadow: inset 3px 0 0 var(--accent), inset 0 0 0 1px var(--accent-glow); }
+
+/* The rotating container */
+.result-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.38s cubic-bezier(.4,0,.2,1);
+  border-radius: var(--radius);
+}
+
+.result-flip-card.flipped .result-flip-inner {
+  transform: rotateX(180deg);
+}
+
+/* Shared face styles */
+.result-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  overflow: hidden;
+}
+
+/* FRONT face — normal explore view */
+.result-face-front {
+  background: transparent;
+  transition: background var(--transition);
+}
+
+.result-flip-card:hover .result-face-front,
+.result-flip-card.active .result-face-front {
+  background: var(--bg3);
+}
+
+.result-flip-card.active .result-face-front {
+  background: var(--accent-glow);
+}
+
+/* BACK face — code/detail view (rotated 180deg, flips into view) */
+.result-face-back {
+  transform: rotateX(180deg);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 7px 12px;
+}
+
+/* Big code label on back */
+.result-back-code {
+  font-family: var(--mono);
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--accent2);
+  letter-spacing: .5px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Two-column grid for meta fields */
+.result-back-grid {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 1px 8px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.result-back-label {
+  font-size: .62rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.result-back-value {
+  font-size: .68rem;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: center;
+}
+
+.result-back-value.mono {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+
+.badge-new-inline {
+  color: var(--purple);
+  font-weight: 700;
+}
+
+/* Trie path mini-viz on back */
+.result-back-trie {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.tpn {
+  font-family: var(--mono);
+  font-size: .65rem;
+  font-weight: 700;
+  color: var(--text3);
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 4px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.tpn-last {
+  color: var(--accent2);
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.tpa {
+  font-size: .6rem;
+  color: var(--text3);
+  flex-shrink: 0;
+}
 
 .result-code {
   font-family: var(--mono);
