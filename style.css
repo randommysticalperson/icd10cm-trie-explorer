@@ -1008,7 +1008,8 @@ kbd {
   perspective: 1200px;
 }
 
-.detail-flip-card:hover .detail-flip-inner {
+.detail-flip-card:hover .detail-flip-inner,
+.detail-flip-card.sticky-flipped .detail-flip-inner {
   transform: rotateY(180deg);
 }
 

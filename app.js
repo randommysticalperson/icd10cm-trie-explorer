@@ -308,15 +308,37 @@ $(function () {
       `);
 
       $item.on('mouseenter', function () {
-        $(this).addClass('flipped');
+        // Only flip on hover if not already sticky
+        if (!$(this).hasClass('sticky-flipped')) {
+          $(this).addClass('flipped');
+        }
       }).on('mouseleave', function () {
-        $(this).removeClass('flipped');
+        // Only un-flip on leave if not sticky
+        if (!$(this).hasClass('sticky-flipped')) {
+          $(this).removeClass('flipped');
+        }
       });
 
       $item.on('click', function () {
         const code = $(this).data('code');
+        const $this = $(this);
+        const isSticky = $this.hasClass('sticky-flipped');
+
+        // Un-sticky any previously sticky result
+        $('.result-item.sticky-flipped').not($this)
+          .removeClass('sticky-flipped flipped');
+
+        if (isSticky) {
+          // Second click: unstick and return to front face
+          $this.removeClass('sticky-flipped flipped');
+        } else {
+          // First click: stick in flipped (code view) state
+          $this.addClass('sticky-flipped flipped');
+        }
+
+        // Always update active selection and show detail
         $('.result-item').removeClass('active');
-        $(this).addClass('active');
+        $this.addClass('active');
         showCodeDetail(code);
       });
 
@@ -338,6 +360,10 @@ $(function () {
   ═══════════════════════════════════════════════════════════════════ */
   function showCodeDetail(code) {
     State.selectedCode = code;
+
+    // Stick the detail panel in the flipped (code view) state on every selection
+    $('#detailCard').addClass('sticky-flipped');
+
     const found = trieFind(code);
     if (!found) {
       const rec = State.flat && State.flat.find(r => r.c === code.toUpperCase());
@@ -355,6 +381,7 @@ $(function () {
     const ancestors = buildAncestors(rec.c);
     renderDetail(node, ancestors);
     highlightTrieNode(rec.c);
+    // renderDetail already wires click.sticky; this is a no-op safety call
   }
 
   function buildAncestors(code) {
@@ -478,6 +505,12 @@ $(function () {
     }
 
     renderTriePath(node.code);
+
+    // Wire the detail card click to toggle sticky off (return to front face)
+    // Use .off/.on to avoid stacking handlers across re-renders
+    $card.off('click.sticky').on('click.sticky', function () {
+      $(this).removeClass('sticky-flipped');
+    });
   }
 
   function renderTriePath(code) {
