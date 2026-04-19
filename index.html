@@ -151,52 +151,109 @@
       <p>Select a code from the browser or search results to view details.</p>
     </div>
 
-    <div class="detail-card" id="detailCard" style="display:none">
-      <div class="detail-code-row">
-        <span class="detail-code-badge" id="detailCode"></span>
-        <span class="detail-billable-badge" id="detailBillable"></span>
-        <span class="detail-new-badge hidden" id="detailNewBadge">NEW FY26</span>
-      </div>
-      <h3 class="detail-long-desc" id="detailLong"></h3>
-      <p class="detail-short-desc" id="detailShort"></p>
+    <!-- Flip-card wrapper: front = human-readable detail, back = raw code view -->
+    <div class="detail-card detail-flip-card" id="detailCard" style="display:none">
+      <div class="detail-flip-inner">
 
-      <div class="detail-meta-grid">
-        <div class="detail-meta-item">
-          <span class="meta-label">Order #</span>
-          <span class="meta-value" id="detailOrder"></span>
-        </div>
-        <div class="detail-meta-item">
-          <span class="meta-label">Code Length</span>
-          <span class="meta-value" id="detailLen"></span>
-        </div>
-        <div class="detail-meta-item">
-          <span class="meta-label">Chapter</span>
-          <span class="meta-value" id="detailChapter"></span>
-        </div>
-        <div class="detail-meta-item">
-          <span class="meta-label">Category</span>
-          <span class="meta-value" id="detailCategory"></span>
-        </div>
-      </div>
+        <!-- ── FRONT FACE: human-readable detail ─────────────────────── -->
+        <div class="detail-face detail-face-front">
+          <div class="detail-code-row">
+            <span class="detail-code-badge" id="detailCode"></span>
+            <span class="detail-billable-badge" id="detailBillable"></span>
+            <span class="detail-new-badge hidden" id="detailNewBadge">NEW FY26</span>
+          </div>
+          <h3 class="detail-long-desc" id="detailLong"></h3>
+          <p class="detail-short-desc" id="detailShort"></p>
 
-      <!-- Ancestry breadcrumb -->
-      <div class="detail-section">
-        <h4 class="detail-section-title">Hierarchy</h4>
-        <ol class="breadcrumb-list" id="detailBreadcrumb"></ol>
-      </div>
+          <div class="detail-meta-grid">
+            <div class="detail-meta-item">
+              <span class="meta-label">Order #</span>
+              <span class="meta-value" id="detailOrder"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="meta-label">Code Length</span>
+              <span class="meta-value" id="detailLen"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="meta-label">Chapter</span>
+              <span class="meta-value" id="detailChapter"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="meta-label">Category</span>
+              <span class="meta-value" id="detailCategory"></span>
+            </div>
+          </div>
 
-      <!-- Siblings / children -->
-      <div class="detail-section" id="detailChildrenSection">
-        <h4 class="detail-section-title" id="detailChildrenTitle">Subcodes</h4>
-        <ul class="subcode-list" id="detailChildren"></ul>
-      </div>
+          <!-- Ancestry breadcrumb -->
+          <div class="detail-section">
+            <h4 class="detail-section-title">Hierarchy</h4>
+            <ol class="breadcrumb-list" id="detailBreadcrumb"></ol>
+          </div>
 
-      <!-- Trie path visualization -->
-      <div class="detail-section">
-        <h4 class="detail-section-title">Trie Path</h4>
-        <div class="trie-path-viz" id="triePathViz"></div>
-      </div>
-    </div>
+          <!-- Siblings / children -->
+          <div class="detail-section" id="detailChildrenSection">
+            <h4 class="detail-section-title" id="detailChildrenTitle">Subcodes</h4>
+            <ul class="subcode-list" id="detailChildren"></ul>
+          </div>
+
+          <!-- Trie path visualization -->
+          <div class="detail-section">
+            <h4 class="detail-section-title">Trie Path</h4>
+            <div class="trie-path-viz" id="triePathViz"></div>
+          </div>
+
+          <div class="detail-hover-hint">Hover to see raw code view &rsaquo;</div>
+        </div>
+
+        <!-- ── BACK FACE: raw code / data view ───────────────────────── -->
+        <div class="detail-face detail-face-back">
+          <div class="detail-back-header">
+            <span class="detail-back-code" id="detailBackCode"></span>
+            <span class="detail-back-badge" id="detailBackBillable"></span>
+          </div>
+          <div class="detail-back-desc" id="detailBackDesc"></div>
+
+          <div class="detail-back-block">
+            <div class="detail-back-row">
+              <span class="detail-back-key">chapter</span>
+              <span class="detail-back-val" id="detailBackChapter"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">category</span>
+              <span class="detail-back-val mono" id="detailBackCategory"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">type</span>
+              <span class="detail-back-val" id="detailBackType"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">order</span>
+              <span class="detail-back-val mono" id="detailBackOrder"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">length</span>
+              <span class="detail-back-val mono" id="detailBackLen"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">billable</span>
+              <span class="detail-back-val mono" id="detailBackBillableRaw"></span>
+            </div>
+            <div class="detail-back-row">
+              <span class="detail-back-key">fy2026_new</span>
+              <span class="detail-back-val mono" id="detailBackNew"></span>
+            </div>
+          </div>
+
+          <div class="detail-back-trie-section">
+            <span class="detail-back-key">trie_path</span>
+            <div class="detail-back-trie" id="detailBackTrie"></div>
+          </div>
+
+          <div class="detail-hover-hint back">Hover away to return &lsaquo;</div>
+        </div>
+
+      </div><!-- /.detail-flip-inner -->
+    </div><!-- /#detailCard -->
   </aside>
 
 </main>

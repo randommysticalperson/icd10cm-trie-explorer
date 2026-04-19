@@ -986,11 +986,191 @@ kbd {
   flex-shrink: 0;
 }
 
-/* ── Detail Panel ──────────────────────────────────────────────────── */
+/* ── Detail Panel Flip Card ───────────────────────────────────────── */
+
+/* Outer container — perspective host */
 .detail-card {
   flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Flip wrapper — rotates on hover */
+.detail-flip-inner {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+
+.detail-flip-card {
+  perspective: 1200px;
+}
+
+.detail-flip-card:hover .detail-flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* Shared face styles */
+.detail-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   overflow-y: auto;
   padding: 16px;
+}
+
+/* FRONT face — human-readable */
+.detail-face-front {
+  background: transparent;
+}
+
+/* BACK face — raw code view, rotated 180deg so it appears on hover */
+.detail-face-back {
+  transform: rotateY(180deg);
+  background: var(--bg2);
+  border-left: 2px solid var(--accent);
+  font-family: var(--mono);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Back face: header row */
+.detail-back-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.detail-back-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent2);
+  letter-spacing: .5px;
+  line-height: 1;
+}
+
+.detail-back-badge {
+  font-size: .7rem;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-weight: 700;
+}
+
+/* Back face: description */
+.detail-back-desc {
+  font-family: var(--font);
+  font-size: .85rem;
+  color: var(--text2);
+  line-height: 1.5;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Back face: key-value block */
+.detail-back-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.detail-back-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-back-row:last-child { border-bottom: none; }
+
+.detail-back-key {
+  font-size: .72rem;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+.detail-back-val {
+  font-size: .78rem;
+  color: var(--text2);
+  font-family: var(--font);
+  word-break: break-word;
+}
+
+.detail-back-val.mono {
+  font-family: var(--mono);
+  color: var(--text);
+}
+
+/* Back face: trie path section */
+.detail-back-trie-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.detail-back-trie {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.dtpn {
+  font-family: var(--mono);
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text3);
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.dtpn-last {
+  color: var(--accent2);
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.dtpa {
+  font-size: .7rem;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+/* Hover hint strip at the bottom of each face */
+.detail-hover-hint {
+  margin-top: 16px;
+  font-size: .68rem;
+  color: var(--text3);
+  text-align: center;
+  letter-spacing: .3px;
+  opacity: .6;
+  transition: opacity var(--transition);
+}
+
+.detail-hover-hint.back {
+  color: var(--accent);
+  opacity: .5;
 }
 
 .detail-code-row {

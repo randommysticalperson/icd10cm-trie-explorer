@@ -354,6 +354,7 @@ $(function () {
     const node = { code: rec.c, short: rec.s, long: rec.l, billable: rec.b, order: rec.o, children: {} };
     const ancestors = buildAncestors(rec.c);
     renderDetail(node, ancestors);
+    highlightTrieNode(rec.c);
   }
 
   function buildAncestors(code) {
@@ -375,6 +376,7 @@ $(function () {
     $card.show();
     $copyBtn.show();
 
+    // ── FRONT FACE ────────────────────────────────────────────────────
     $('#detailCode').text(node.code);
 
     const $bill = $('#detailBillable');
@@ -386,7 +388,8 @@ $(function () {
 
     // FY2026 new code indicator
     const $newBadge = $('#detailNewBadge');
-    if (State.newCodes.has(node.code)) {
+    const isNew = State.newCodes.has(node.code);
+    if (isNew) {
       $newBadge.removeClass('hidden');
     } else {
       $newBadge.addClass('hidden');
@@ -405,6 +408,30 @@ $(function () {
     const chapter = getChapterForCode(node.code);
     $('#detailChapter').text(chapter ? `Ch. ${chapter.label}` : '—');
     $('#detailCategory').text(node.code.slice(0, 3));
+
+    // ── BACK FACE ─────────────────────────────────────────────────────
+    $('#detailBackCode').text(node.code);
+    const $backBill = $('#detailBackBillable');
+    if (node.billable) {
+      $backBill.text('Billable').removeClass('badge-header').addClass('badge-billable');
+    } else {
+      $backBill.text('Header').removeClass('badge-billable').addClass('badge-header');
+    }
+    $('#detailBackDesc').text(node.long || node.short || '');
+    $('#detailBackChapter').text(chapter ? `Ch. ${chapter.label} — ${chapter.title}` : '—');
+    $('#detailBackCategory').text(node.code.slice(0, 3));
+    $('#detailBackType').text(node.billable ? 'Billable' : 'Header / Non-billable');
+    $('#detailBackOrder').text(node.order ? `#${node.order.toLocaleString()}` : '—');
+    $('#detailBackLen').text(`${node.code.length} char${node.code.length !== 1 ? 's' : ''}`);
+    $('#detailBackBillableRaw').text(node.billable ? 'true' : 'false');
+    $('#detailBackNew').text(isNew ? 'true' : 'false');
+
+    // Trie path mini-viz on back face
+    const $backTrie = $('#detailBackTrie').empty();
+    node.code.split('').forEach((ch, i, arr) => {
+      $backTrie.append(`<span class="dtpn ${i === arr.length - 1 ? 'dtpn-last' : ''}">${escHtml(ch)}</span>`);
+      if (i < arr.length - 1) $backTrie.append('<span class="dtpa">&rarr;</span>');
+    });
 
     // Breadcrumb
     const $bc = $('#detailBreadcrumb').empty();
@@ -507,6 +534,24 @@ $(function () {
     const $children = $('<ul class="trie-children"></ul>');
     let childrenLoaded = false;
 
+    // Shared helper: load & open children without triggering showCodeDetail
+    function openChildren() {
+      if (!hasChildren) return;
+      const $toggle = $row.find('.trie-toggle');
+      if (!childrenLoaded) {
+        const childNodes = Object.values(node.children).sort((a, b) => a.order - b.order);
+        childNodes.forEach(child => {
+          $children.append(buildTrieNodeEl(child, depth + 1));
+        });
+        childrenLoaded = true;
+      }
+      $children.addClass('open');
+      $toggle.addClass('open');
+    }
+
+    // Expose on the DOM element so highlightTrieNode can call it
+    $row[0]._openChildren = openChildren;
+
     $row.on('click', function (e) {
       e.stopPropagation();
       const code = $(this).data('code');
@@ -519,15 +564,7 @@ $(function () {
         const $toggle = $(this).find('.trie-toggle');
         const isOpen = $children.hasClass('open');
         if (!isOpen) {
-          if (!childrenLoaded) {
-            const childNodes = Object.values(node.children).sort((a, b) => a.order - b.order);
-            childNodes.forEach(child => {
-              $children.append(buildTrieNodeEl(child, depth + 1));
-            });
-            childrenLoaded = true;
-          }
-          $children.addClass('open');
-          $toggle.addClass('open');
+          openChildren();
         } else {
           $children.removeClass('open');
           $toggle.removeClass('open');
@@ -541,11 +578,40 @@ $(function () {
   }
 
   function highlightTrieNode(code) {
-    const $row = $(`.trie-node-row[data-code="${CSS.escape(code)}"]`);
-    if ($row.length) {
-      $('.trie-node-row').removeClass('selected');
-      $row.addClass('selected');
-      $row[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    code = code.toUpperCase();
+
+    // 1. Ensure the correct chapter is active so the root category node exists
+    const chapter = getChapterForCode(code);
+    if (chapter && State.activeChapter !== chapter.id) {
+      State.activeChapter = chapter.id;
+      $('.chapter-pill').removeClass('active');
+      $(`.chapter-pill[data-chapter="${chapter.id}"]`).addClass('active');
+      renderTrieRoot(chapter.id);
+    }
+
+    // 2. Build the full ancestor prefix chain: ["A00", "A000", ...]
+    const prefixes = [];
+    for (let len = 3; len <= code.length; len++) {
+      prefixes.push(code.slice(0, len));
+    }
+
+    // 3. Walk each prefix level and open children using the exposed helper
+    //    (does NOT trigger showCodeDetail — avoids recursive re-render)
+    prefixes.forEach((prefix, idx) => {
+      const rowEl = document.querySelector(`.trie-node-row[data-code="${CSS.escape(prefix)}"]`);
+      if (!rowEl) return;
+      // For all but the last prefix, open children to reveal the next level
+      if (idx < prefixes.length - 1 && typeof rowEl._openChildren === 'function') {
+        rowEl._openChildren();
+      }
+    });
+
+    // 4. Select and scroll to the target row
+    const targetEl = document.querySelector(`.trie-node-row[data-code="${CSS.escape(code)}"]`);
+    if (targetEl) {
+      document.querySelectorAll('.trie-node-row.selected').forEach(el => el.classList.remove('selected'));
+      targetEl.classList.add('selected');
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
