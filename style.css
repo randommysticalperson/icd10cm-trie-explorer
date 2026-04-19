@@ -130,6 +130,28 @@ body {
 
 .stat-pill-accent .stat-num { color: var(--green); }
 
+/* ── jQuery logo badge ─────────────────────────────────────────────── */
+.jquery-badge {
+  display: flex;
+  align-items: center;
+  opacity: 0.85;
+  transition: opacity .2s ease, transform .2s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.jquery-badge:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.jquery-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.5));
+}
+
 .stat-label {
   font-size: .65rem;
   color: var(--text3);
