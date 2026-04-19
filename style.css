@@ -40,10 +40,10 @@ body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden; /* page itself never scrolls; only trie-scroll does */
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────── */
@@ -148,7 +148,9 @@ body {
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  min-height: calc(100vh - 120px);
+  /* Lock the layout to the viewport height so panels never push the page */
+  height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
 /* ── Panels ────────────────────────────────────────────────────────── */
@@ -159,23 +161,22 @@ body {
   overflow: hidden;
 }
 
-.panel-left  { background: var(--bg2); }
+/* Left panel: trie browser scrolls independently inside its own container */
+.panel-left  {
+  background: var(--bg2);
+  overflow: hidden;   /* children handle their own scroll */
+}
 
+/* Center and right panels: no sticky, no page scroll — they stay in view */
 .panel-center {
   background: var(--bg);
   border-right: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow: hidden;
 }
 
 .panel-right {
   background: var(--bg2);
   border-right: none;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow: hidden;
 }
 
