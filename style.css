@@ -160,8 +160,24 @@ body {
 }
 
 .panel-left  { background: var(--bg2); }
-.panel-center { background: var(--bg); border-right: 1px solid var(--border); }
-.panel-right { background: var(--bg2); border-right: none; }
+
+.panel-center {
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.panel-right {
+  background: var(--bg2);
+  border-right: none;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
 
 .panel-header {
   display: flex;
